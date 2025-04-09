@@ -23,7 +23,7 @@ class BookingService
         $ppn = 0.11;
         $price = $product->price_per_person;
         $totalPpn = $ppn * $price;
-        $totalAmount = $price * $totalPpn;
+        $totalAmount = $price + $totalPpn;
 
         return [
             'product_id' => $product->id,
@@ -59,7 +59,7 @@ class BookingService
 
     public function paymentStore(array $validated)
     {
-        $bookingData = Session::get('bookin_data');
+        $bookingData = Session::get('booking_data');
         if (!$bookingData) {
             Log::error('No booking data found in session');
             return null;
@@ -111,10 +111,15 @@ class BookingService
 
         $productCapacity = $bookingDetails->product->capacity ?? 0;
 
+        $totalParticipants = $subscriptionGroup->groupParticipants()->count();
+        $remainingSlots = $productCapacity - $totalParticipants;
+
         return [
             'bookingDetails' => $bookingDetails,
             'subscriptionGroup' => $subscriptionGroup,
-            'productCapacity' => $productCapacity
+            'productCapacity' => $productCapacity,
+            'totalParticipants' => $totalParticipants,
+            'remainingSlots' => $remainingSlots
         ];
     }
 }
